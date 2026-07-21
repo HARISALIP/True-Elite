@@ -8,14 +8,34 @@ try {
     // Clean up old demo/test records
     $pdo->exec("DELETE FROM quotations WHERE quotation_number NOT LIKE 'TEK-%'");
 
-    $stmt = $pdo->query("
+    // Pagination Logic
+    $limit = 30;
+    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+    if ($page < 1) $page = 1;
+    $offset = ($page - 1) * $limit;
+
+    // Get Total Count
+    $countStmt = $pdo->query("SELECT COUNT(*) FROM quotations");
+    $totalRecords = $countStmt->fetchColumn();
+    $totalPages = ceil($totalRecords / $limit);
+
+    $stmt = $pdo->prepare("
         SELECT q.id, q.quotation_number, q.quotation_date, q.created_at, c.customer_name, u.name as salesperson, q.grand_total, q.workflow_status 
         FROM quotations q
         LEFT JOIN customers c ON q.customer_id = c.id
         LEFT JOIN users u ON q.salesperson_id = u.id
         ORDER BY q.created_at DESC
+        LIMIT :limit OFFSET :offset
     ");
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    
     $quotes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Calculate display values
+    $startRecord = $totalRecords > 0 ? $offset + 1 : 0;
+    $endRecord = min($offset + $limit, $totalRecords);
 } catch (Exception $e) {
     $quotes = [];
 }
@@ -43,9 +63,9 @@ try {
             </div>
             
             <div class="flex items-center gap-1 text-sm text-gray-600">
-                <span>1-3 / 3</span>
-                <button class="p-1 hover:bg-gray-100 rounded-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></button>
-                <button class="p-1 hover:bg-gray-100 rounded-sm"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>
+                <span><?php echo "$startRecord-$endRecord / $totalRecords"; ?></span>
+                <a href="<?php echo $page > 1 ? '?page='.($page-1) : '#'; ?>" class="p-1 hover:bg-gray-100 rounded-sm <?php echo $page <= 1 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''; ?>"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></a>
+                <a href="<?php echo $page < $totalPages ? '?page='.($page+1) : '#'; ?>" class="p-1 hover:bg-gray-100 rounded-sm <?php echo $page >= $totalPages ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''; ?>"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></a>
             </div>
         </div>
     </div>
