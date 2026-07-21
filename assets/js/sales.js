@@ -507,7 +507,15 @@ async function saveQuotation() {
         if (result.success) {
             currentQuotationId = result.data.quotation_id;
             currentQuotationNumber = result.data.quotation_number;
-            showToast('Saved', `Quotation ${result.data.quotation_number} saved to MySQL.`);
+            
+            // Update the URL so refreshing doesn't create a new blank quote
+            if (!window.location.search.includes('id=')) {
+                const url = new URL(window.location);
+                url.searchParams.set('id', currentQuotationNumber);
+                window.history.pushState({}, '', url);
+            }
+            
+            showToast('Saved', `Quotation ${currentQuotationNumber} saved to MySQL.`);
             return true;
         } else {
             alert("Error: " + result.error);
