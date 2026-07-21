@@ -31,7 +31,7 @@ require_once '../includes/header.php';
 <form class="pt-12 min-h-screen flex flex-col bg-[#F0EFF5]">
     
     <!-- Action Toolbar -->
-    <div class="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between shadow-sm z-20 sticky top-12">
+    <div class="bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between shadow-sm z-50 sticky top-12">
         <div class="flex items-center gap-4 text-gray-700">
             <span class="text-xl">New</span>
             <button type="button" onclick="saveQuotation()" class="text-gray-500 hover:text-black" title="Save">
@@ -47,6 +47,7 @@ require_once '../includes/header.php';
                 <button type="button" onclick="document.getElementById('print-dropdown').classList.toggle('hidden')" class="flex items-center gap-1 hover:text-black">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                     Print
+                    <svg class="w-3 h-3 ml-0.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 <div id="print-dropdown" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50">
                     <div class="py-1" role="menu" aria-orientation="vertical">
