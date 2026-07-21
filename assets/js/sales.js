@@ -965,12 +965,25 @@ function updateWorkflowRibbonUI(status) {
     });
     if (cEl) cEl.classList.add('hidden');
     
+    // Toggle action buttons
+    const btnConfirm = document.getElementById('btn-confirm');
+    const btnCancel = document.getElementById('btn-cancel');
+    const btnEmail = document.getElementById('btn-email');
+    
+    if (btnConfirm) btnConfirm.classList.remove('hidden');
+    if (btnCancel) btnCancel.classList.remove('hidden');
+    
     if (status === 'Cancelled' && cEl) {
         [qEl, sEl, oEl].forEach(el => { if (el) el.classList.add('hidden'); });
         cEl.classList.remove('hidden');
+        if (btnConfirm) btnConfirm.classList.add('hidden');
+        if (btnCancel) btnCancel.classList.add('hidden');
+        if (btnEmail) btnEmail.classList.add('hidden');
     } else if (status === 'Sales Order' && oEl) {
         oEl.classList.add('bg-[#017e84]', 'text-white');
         oEl.classList.remove('bg-gray-200', 'text-gray-500');
+        if (btnConfirm) btnConfirm.classList.add('hidden');
+        if (btnCancel) btnCancel.classList.add('hidden');
     } else if (status === 'Quotation Sent' && sEl) {
         sEl.classList.add('bg-[#017e84]', 'text-white');
         sEl.classList.remove('bg-gray-200', 'text-gray-500');
@@ -1020,4 +1033,34 @@ async function confirmQuotation() {
 
 async function cancelQuotation() {
     await updateStatus('Cancelled');
+}
+
+async function openEmailModal() {
+    if (!currentQuotationId) {
+        const saved = await saveQuotation();
+        if (!saved) return;
+    }
+    
+    // Attempt to pre-fill email
+    let customerEmail = '';
+    const customerSelect = document.getElementById('customer_id');
+    if (customerSelect && customerSelect.value) {
+        const c = customers[customerSelect.value];
+        if (c && c.email) {
+            customerEmail = c.email;
+        }
+    }
+    
+    document.getElementById('email-to').value = customerEmail;
+    document.getElementById('email-subject').value = `Quotation (Ref ${currentQuotationNumber || 'New'})`;
+    
+    const grandTotal = document.getElementById('grand-total').textContent;
+    document.getElementById('email-body').value = `Hello,\n\nYour quotation ${currentQuotationNumber || 'New'} amounting to ${grandTotal} AED is ready for review.\n\nDo not hesitate to contact us if you have any questions.`;
+    
+    document.getElementById('email-modal').classList.remove('hidden');
+}
+
+async function sendEmail() {
+    document.getElementById('email-modal').classList.add('hidden');
+    await updateStatus('Quotation Sent');
 }

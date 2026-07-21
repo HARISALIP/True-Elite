@@ -1,6 +1,6 @@
 <div class="px-6 py-3 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
     <div class="flex items-center gap-2">
-        <button type="button" onclick="openEmailModal()" class="btn-primary px-3 py-1.5 rounded-sm text-sm font-medium shadow-sm">SEND BY EMAIL</button>
+        <button type="button" id="btn-email" onclick="openEmailModal()" class="btn-primary px-3 py-1.5 rounded-sm text-sm font-medium shadow-sm">SEND BY EMAIL</button>
         <button type="button" id="btn-confirm" onclick="confirmQuotation()" class="btn-secondary px-3 py-1.5 rounded-sm text-sm font-medium shadow-sm">CONFIRM</button>
         <button type="button" id="btn-cancel" onclick="cancelQuotation()" class="btn-secondary px-3 py-1.5 rounded-sm text-sm font-medium shadow-sm">CANCEL</button>
     </div>

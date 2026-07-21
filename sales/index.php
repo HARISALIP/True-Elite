@@ -141,19 +141,19 @@ require_once '../includes/header.php';
         <div class="p-6 space-y-4 flex-1 overflow-y-auto">
             <div class="flex items-center">
                 <label class="w-20 text-sm font-medium text-gray-700">To</label>
-                <input type="text" value="contact@alfuttaim.com" class="flex-1 form-input-odoo bg-gray-50 p-2" readonly>
+                <input type="email" id="email-to" value="" class="flex-1 form-input-odoo p-2">
             </div>
             <div class="flex items-center">
                 <label class="w-20 text-sm font-medium text-gray-700">Subject</label>
-                <input type="text" value="Quotation (Ref S0004)" class="flex-1 form-input-odoo p-2">
+                <input type="text" id="email-subject" value="" class="flex-1 form-input-odoo p-2">
             </div>
-            <div class="border border-gray-300 rounded-sm p-2 mt-4 min-h-[200px]">
-                <p class="text-sm text-gray-700">Hello,<br><br>Your quotation <strong>S0004</strong> amounting to <strong>4,383.75 AED</strong> is ready for review.<br><br>Do not hesitate to contact us if you have any questions.</p>
+            <div class="mt-4">
+                <textarea id="email-body" class="w-full form-input-odoo p-3 min-h-[200px] text-sm text-gray-700 resize-none"></textarea>
             </div>
         </div>
         <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-2">
             <button onclick="document.getElementById('email-modal').classList.add('hidden')" class="btn-secondary px-4 py-2 rounded-sm text-sm">Discard</button>
-            <button onclick="document.getElementById('email-modal').classList.add('hidden'); showToast('Email Sent', 'Your email was successfully queued for sending.');" class="btn-primary px-4 py-2 rounded-sm text-sm">Send</button>
+            <button onclick="sendEmail()" class="btn-primary px-4 py-2 rounded-sm text-sm">Send</button>
         </div>
     </div>
 </div>
