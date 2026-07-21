@@ -92,7 +92,7 @@ if ($quotationNumber) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tax Invoice - <?php echo $invoice['invNo']; ?></title>
+    <title><?php echo ucwords(strtolower($docTitle)); ?> - <?php echo $invoice['invNo']; ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: Arial, Helvetica, sans-serif; background-color: #f3f4f6; color: #000; }
@@ -150,7 +150,7 @@ if ($quotationNumber) {
     <!-- Non-Printable Toolbar -->
     <div class="no-print bg-gray-800 text-white p-4 sticky top-0 z-50 shadow-md flex justify-between items-center">
         <div>
-            <h2 class="font-semibold text-lg">Tax Invoice Print Preview</h2>
+            <h2 class="font-semibold text-lg"><?php echo ucwords(strtolower($docTitle)); ?> Print Preview</h2>
             <p class="text-xs text-gray-300">Layout: A4 Portrait</p>
         </div>
         <div class="flex gap-3">
