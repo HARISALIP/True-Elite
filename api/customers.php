@@ -59,14 +59,14 @@ if ($method === 'POST') {
     try {
         $id = $_POST['id'] ?? null;
         if ($id) {
-            $stmt = $pdo->prepare("UPDATE customers SET customer_name=?, email=?, phone=?, address=?, city=?, country=?, trn=?, company_name=? WHERE id=?");
+            $stmt = $pdo->prepare("UPDATE customers SET customer_name=?, email=?, phone=?, address=?, city=?, country=?, trn=?, company=? WHERE id=?");
             $stmt->execute([
                 $name, $email, $phone, $address, $city, $country, $trn, $company, $id
             ]);
             logActivity($pdo, 1, 'Customer Updated', 'Customers', $id, "Updated customer: $name");
             $newId = $id;
         } else {
-            $stmt = $pdo->prepare("INSERT INTO customers (customer_name, email, phone, address, city, country, trn, company_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt = $pdo->prepare("INSERT INTO customers (customer_name, email, phone, address, city, country, trn, company) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([
                 $name, $email, $phone, $address, $city, $country, $trn, $company
             ]);
