@@ -1054,7 +1054,7 @@ async function openEmailModal() {
     document.getElementById('email-to').value = customerEmail;
     document.getElementById('email-subject').value = `Quotation (Ref ${currentQuotationNumber || 'New'})`;
     
-    const grandTotal = document.getElementById('grand-total').textContent;
+    const grandTotal = document.getElementById('total-grand').textContent;
     document.getElementById('email-body').value = `Hello,\n\nYour quotation ${currentQuotationNumber || 'New'} amounting to ${grandTotal} AED is ready for review.\n\nDo not hesitate to contact us if you have any questions.`;
     
     document.getElementById('email-modal').classList.remove('hidden');
