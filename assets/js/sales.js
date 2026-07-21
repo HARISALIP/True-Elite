@@ -1072,3 +1072,14 @@ async function sendEmail() {
     document.getElementById('email-modal').classList.add('hidden');
     await updateStatus('Quotation Sent');
 }
+
+function printDocument(type) {
+    if (!currentQuotationId) {
+        alert("Please save the document first before printing.");
+        return;
+    }
+    const dropdown = document.getElementById('print-dropdown');
+    if (dropdown) dropdown.classList.add('hidden');
+    
+    window.open(`invoice_print.php?id=${currentQuotationNumber}&type=${type}`, '_blank');
+}

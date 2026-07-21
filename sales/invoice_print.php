@@ -21,11 +21,16 @@ $invoice = [
     'lpoNo' => 'N/A',
     'orderNo' => $quotationNumber,
     'trnCompany' => '104264202300003',
+    'department' => 'N/A',
+    'subject' => 'N/A',
     
     'subTotal' => '0.00',
     'vat' => '0.00',
     'total' => '0.00',
-    'amountInWords' => 'ZERO ONLY'
+    'amountInWords' => 'ZERO ONLY',
+    
+    'paymentTerms' => 'N/A',
+    'validity' => 'N/A'
 ];
 $lines = [];
 
@@ -46,12 +51,25 @@ if ($quotationNumber) {
             $invoice['tel'] = $data['phone'];
             $invoice['trnCustomer'] = $data['trn'] ?: 'N/A';
             $invoice['project'] = strtoupper($data['subject'] ?: 'N/A');
-            $invoice['invNo'] = 'INV-' . date('y') . '-' . substr($data['quotation_number'], 1);
+            $invoice['department'] = strtoupper($data['department'] ?: 'N/A');
+            $invoice['subject'] = strtoupper($data['subject'] ?: 'N/A');
+            
+            if ($type === 'quote') {
+                $invoice['invNo'] = $data['quotation_number'];
+            } elseif ($type === 'delivery') {
+                $invoice['invNo'] = str_replace('TEK-', 'DO-', $data['quotation_number']);
+            } else {
+                $invoice['invNo'] = str_replace('TEK-', 'INV-', $data['quotation_number']);
+            }
+            
             $invoice['date'] = date('d/m/Y', strtotime($data['quotation_date']));
             $invoice['lpoNo'] = 'NA';
             $invoice['subTotal'] = number_format($data['subtotal'], 2);
             $invoice['vat'] = number_format($data['tax_total'], 2);
             $invoice['total'] = number_format($data['grand_total'], 2);
+            
+            $invoice['paymentTerms'] = $data['payment_terms'] ?: 'Immediate Payment';
+            $invoice['validity'] = $data['expiry_date'] ? date('d/m/Y', strtotime($data['expiry_date'])) : '7 Days';
             
             $invoice['amountInWords'] = strtoupper(getAmountInWords($data['grand_total']));
             
@@ -176,17 +194,30 @@ if ($quotationNumber) {
                     <tr><td class="pr-1 pb-2 w-20">NAME</td><td class="pb-2 w-2">:</td><td class="pb-2 whitespace-normal break-words"><?php echo $invoice['customerName']; ?></td></tr>
                     <tr><td class="pr-1 pb-2 align-top">ADDRESS</td><td class="pb-2 align-top">:</td><td class="pb-2 whitespace-normal break-words"><?php echo $invoice['customerAddress']; ?></td></tr>
                     <tr><td class="pr-1 pb-2">TEL</td><td class="pb-2">:</td><td class="pb-2"><?php echo $invoice['tel']; ?></td></tr>
+                    <?php if ($type === 'quote'): ?>
+                    <tr><td class="pr-1 pb-2 align-top">DEPARTMENT (TO)</td><td class="pb-2 align-top">:</td><td class="pb-2 whitespace-normal break-words"><?php echo $invoice['department']; ?></td></tr>
+                    <tr><td class="pr-1 pb-2 align-top">SUBJECT</td><td class="pb-2 align-top">:</td><td class="pb-2 whitespace-normal break-words"><?php echo $invoice['subject']; ?></td></tr>
+                    <?php else: ?>
                     <tr><td class="pr-1 pb-2">TRN</td><td class="pb-2">:</td><td class="pb-2"><?php echo $invoice['trnCustomer']; ?></td></tr>
+                    <?php endif; ?>
                 </table>
             </div>
             <!-- Right: Invoice Info -->
             <div class="w-[40%] pl-4">
                 <table class="whitespace-nowrap w-full">
-                    <tr><td class="pr-1 pb-2 w-24"><?php echo $type === 'quote' ? 'QUOTE NO' : 'INV NO'; ?></td><td class="pb-2 w-2">:</td><td class="pb-2"><?php echo $invoice['invNo']; ?></td></tr>
+                    <tr><td class="pr-1 pb-2 w-24"><?php 
+                        if ($type === 'quote') echo 'QUOTATION REF';
+                        elseif ($type === 'delivery') echo 'DELIVERY NOTE NO';
+                        else echo 'INV NO';
+                    ?></td><td class="pb-2 w-2">:</td><td class="pb-2"><?php echo $invoice['invNo']; ?></td></tr>
                     <tr><td class="pr-1 pb-2">DATE</td><td class="pb-2">:</td><td class="pb-2"><?php echo $invoice['date']; ?></td></tr>
+                    <?php if ($type === 'delivery'): ?>
                     <tr><td class="pr-1 pb-2">LPO NO</td><td class="pb-2">:</td><td class="pb-2"><?php echo $invoice['lpoNo']; ?></td></tr>
                     <tr><td class="pr-1 pb-2">ORDER NO</td><td class="pb-2">:</td><td class="pb-2"><?php echo $invoice['orderNo']; ?></td></tr>
+                    <?php endif; ?>
+                    <?php if ($type !== 'quote'): ?>
                     <tr><td class="pr-1 pb-2">TRN</td><td class="pb-2">:</td><td class="pb-2"><?php echo $invoice['trnCompany']; ?></td></tr>
+                    <?php endif; ?>
                 </table>
             </div>
         </div>
@@ -305,14 +336,41 @@ if ($quotationNumber) {
         </div>
 
         <!-- Signature Section -->
-        <div class="signature-section flex justify-between items-start mt-6 px-1">
+        <?php if ($type === 'quote'): ?>
+        <div class="mt-6 font-arial px-1">
+            <h3 class="text-[11px] font-bold underline mb-1">AGREEMENT & CONDITIONS:</h3>
+            <p class="text-[11px] mb-4">The agreement and conditions will be standard as per the company policies unless specified otherwise.</p>
+            
+            <h3 class="text-[11px] font-bold underline mb-1">OTHER TERMS & CONDITIONS:</h3>
+            <ul class="text-[11px] list-disc pl-5 mb-8">
+                <li>Payment: <?php echo htmlspecialchars($invoice['paymentTerms']); ?></li>
+                <li>Validity: Valid until <?php echo htmlspecialchars($invoice['validity']); ?></li>
+                <li>Delivery: Subject to availability.</li>
+            </ul>
+            
+            <div class="flex justify-between items-start mt-12">
+                <div class="w-[45%] flex flex-col">
+                    <p class="text-[11px] font-bold mb-10">For True Elite Kitchen Equipment Trading LLC-SPC</p>
+                    <div class="border-t border-black w-full mt-2"></div>
+                    <p class="text-[11px] font-bold mt-1 text-center">Authorized Signatory</p>
+                </div>
+                <div class="w-[45%] flex flex-col">
+                    <p class="text-[11px] font-bold mb-10">Client Acceptance</p>
+                    <div class="border-t border-black w-full mt-2"></div>
+                    <p class="text-[11px] font-bold mt-1 text-center">Sign & Company Seal</p>
+                </div>
+            </div>
+        </div>
+        
+        <?php elseif ($type === 'delivery'): ?>
+        <div class="signature-section flex justify-between items-start mt-10 px-1">
             <!-- Left Side -->
             <div class="w-1/2">
                 <p class="text-[11px] font-bold mb-4">Received the above goods in full and good condition</p>
-                <div class="w-[240px] flex flex-col gap-4 text-[11px] font-bold">
-                    <div class="flex items-end"><span class="w-16">NAME</span><span class="mr-2">:</span><span class="flex-1"></span></div>
-                    <div class="flex items-end"><span class="w-16">PHONE</span><span class="mr-2">:</span><span class="flex-1"></span></div>
-                    <div class="flex items-end"><span class="w-16">SIGN/SEAL</span><span class="mr-2">:</span><span class="flex-1"></span></div>
+                <div class="w-[260px] flex flex-col gap-4 text-[11px] font-bold">
+                    <div class="flex items-end"><span class="w-20">NAME</span><span class="mr-2">:</span><span class="flex-1 border-b border-black border-dashed"></span></div>
+                    <div class="flex items-end"><span class="w-20">PHONE</span><span class="mr-2">:</span><span class="flex-1 border-b border-black border-dashed"></span></div>
+                    <div class="flex items-end"><span class="w-20">SIGN/SEAL</span><span class="mr-2">:</span><span class="flex-1 border-b border-black border-dashed"></span></div>
                 </div>
             </div>
             
@@ -321,6 +379,18 @@ if ($quotationNumber) {
                 <p class="text-[11px] font-bold">True Elite Kitchen Equipment Trading LLC-SPC</p>
             </div>
         </div>
+        
+        <?php else: ?>
+        <div class="signature-section flex justify-between items-start mt-10 px-1">
+            <div class="w-1/2">
+                <p class="text-[11px] font-bold mb-8">Customer Signature & Seal</p>
+                <div class="w-48 border-b border-black"></div>
+            </div>
+            <div class="w-1/2 flex flex-col items-end">
+                <p class="text-[11px] font-bold">True Elite Kitchen Equipment Trading LLC-SPC</p>
+            </div>
+        </div>
+        <?php endif; ?>
         
     </div>
 
