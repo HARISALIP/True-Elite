@@ -5,17 +5,18 @@ $subSection = 'reporting';
 require_once '../includes/header.php';
 require_once '../config/db.php';
 
-// Fetch sales stats
+// Fetch sales stats with exact database column names (workflow_status, grand_total)
 $totalQuotations = $pdo->query("SELECT COUNT(*) FROM quotations")->fetchColumn();
-$totalSalesOrders = $pdo->query("SELECT COUNT(*) FROM quotations WHERE status = 'Sales Order'")->fetchColumn();
-$totalRevenue = $pdo->query("SELECT IFNULL(SUM(total), 0) FROM quotations WHERE status = 'Sales Order'")->fetchColumn();
+$totalSalesOrders = $pdo->query("SELECT COUNT(*) FROM quotations WHERE workflow_status = 'Sales Order'")->fetchColumn();
+$totalRevenue = $pdo->query("SELECT IFNULL(SUM(grand_total), 0) FROM quotations WHERE workflow_status = 'Sales Order'")->fetchColumn();
 $avgOrderValue = $totalSalesOrders > 0 ? ($totalRevenue / $totalSalesOrders) : 0;
 
-// Recent quotations list
+// Recent quotations list with customer name JOIN
 $recentQuotations = $pdo->query("
-    SELECT quotation_number, customer_name, quotation_date, total, status 
-    FROM quotations 
-    ORDER BY created_at DESC 
+    SELECT q.quotation_number, c.customer_name, q.quotation_date, q.grand_total AS total, q.workflow_status AS status 
+    FROM quotations q
+    LEFT JOIN customers c ON q.customer_id = c.id
+    ORDER BY q.created_at DESC 
     LIMIT 10
 ")->fetchAll();
 ?>

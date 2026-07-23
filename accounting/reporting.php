@@ -5,8 +5,8 @@ $subSection = 'reporting';
 require_once '../includes/header.php';
 require_once '../config/db.php';
 
-// Calculate financial figures
-$totalSalesRevenue = $pdo->query("SELECT IFNULL(SUM(total), 0) FROM quotations WHERE status = 'Sales Order'")->fetchColumn();
+// Calculate financial figures with exact schema column names (workflow_status, grand_total)
+$totalSalesRevenue = $pdo->query("SELECT IFNULL(SUM(grand_total), 0) FROM quotations WHERE workflow_status = 'Sales Order'")->fetchColumn();
 $salesVatTotal = $totalSalesRevenue * 0.05; // 5% Output VAT
 
 $totalPurchaseExpenses = $pdo->query("SELECT IFNULL(SUM(grand_total), 0) FROM direct_purchases")->fetchColumn();
