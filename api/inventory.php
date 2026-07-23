@@ -72,26 +72,10 @@ if ($method === 'POST') {
 
     $action = $data['action'] ?? '';
 
-    if ($action === 'update_item') {
-        $id = $data['id'] ?? null;
-        if (!$id) {
-            jsonResponse(false, [], "Item ID is required.");
-        }
+    if ($action === 'update_item' || $action === 'save_item') {
+        $id = !empty($data['id']) ? $data['id'] : null;
 
         try {
-            $stmt = $pdo->prepare("UPDATE products SET 
-                product_name = ?,
-                item_code = ?,
-                category = ?,
-                supplier_id = ?,
-                supplier_name = ?,
-                cost = ?,
-                sales_price = ?,
-                quantity_in_stock = ?,
-                min_stock_alert = ?,
-                equipment_serial_number = ?
-                WHERE id = ?");
-
             $supplierName = '';
             if (!empty($data['supplier_id'])) {
                 $supStmt = $pdo->prepare("SELECT supplier_name FROM suppliers WHERE id = ?");
@@ -101,22 +85,70 @@ if ($method === 'POST') {
                 $supplierName = $data['supplier_name'] ?? '';
             }
 
-            $stmt->execute([
-                $data['product_name'] ?? '',
-                $data['item_code'] ?? '',
-                $data['category'] ?? 'General',
-                $data['supplier_id'] ?: null,
-                $supplierName,
-                $data['cost'] ?? 0,
-                $data['sales_price'] ?? 0,
-                $data['quantity_in_stock'] ?? 0,
-                $data['min_stock_alert'] ?? 5,
-                $data['equipment_serial_number'] ?? '',
-                $id
-            ]);
+            if ($id) {
+                // UPDATE existing item
+                $stmt = $pdo->prepare("UPDATE products SET 
+                    product_name = ?,
+                    item_code = ?,
+                    category = ?,
+                    supplier_id = ?,
+                    supplier_name = ?,
+                    cost = ?,
+                    sales_price = ?,
+                    quantity_in_stock = ?,
+                    min_stock_alert = ?,
+                    equipment_serial_number = ?
+                    WHERE id = ?");
 
-            logActivity($pdo, 1, 'Inventory Item Updated', 'Inventory', $id, "Updated inventory parameters for product ID: $id");
-            jsonResponse(true, ['message' => 'Item updated successfully']);
+                $stmt->execute([
+                    $data['product_name'] ?? '',
+                    $data['item_code'] ?? '',
+                    $data['category'] ?? 'General',
+                    $data['supplier_id'] ?: null,
+                    $supplierName,
+                    $data['cost'] ?? 0,
+                    $data['sales_price'] ?? 0,
+                    $data['quantity_in_stock'] ?? 0,
+                    $data['min_stock_alert'] ?? 5,
+                    $data['equipment_serial_number'] ?? '',
+                    $id
+                ]);
+
+                logActivity($pdo, 1, 'Inventory Item Updated', 'Inventory', $id, "Updated inventory parameters for product ID: $id");
+                jsonResponse(true, ['message' => 'Item updated successfully']);
+            } else {
+                // INSERT new item
+                $stmt = $pdo->prepare("INSERT INTO products (
+                    product_name, item_code, category, supplier_id, supplier_name, 
+                    cost, sales_price, quantity_in_stock, min_stock_alert, equipment_serial_number, stock_in_total
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+                $qty = (float)($data['quantity_in_stock'] ?? 0);
+
+                $stmt->execute([
+                    $data['product_name'] ?? '',
+                    $data['item_code'] ?? '',
+                    $data['category'] ?? 'General',
+                    $data['supplier_id'] ?: null,
+                    $supplierName,
+                    $data['cost'] ?? 0,
+                    $data['sales_price'] ?? 0,
+                    $qty,
+                    $data['min_stock_alert'] ?? 5,
+                    $data['equipment_serial_number'] ?? '',
+                    $qty
+                ]);
+
+                $newId = $pdo->lastInsertId();
+
+                if ($qty > 0) {
+                    $smStmt = $pdo->prepare("INSERT INTO stock_movements (product_id, movement_type, source_type, quantity, notes) VALUES (?, 'STOCK_IN', 'ADJUSTMENT', ?, 'Initial stock creation')");
+                    $smStmt->execute([$newId, $qty]);
+                }
+
+                logActivity($pdo, 1, 'Inventory Item Created', 'Inventory', $newId, "Created new inventory product ID: $newId");
+                jsonResponse(true, ['message' => 'Item created successfully', 'id' => $newId]);
+            }
         } catch (Exception $e) {
             jsonResponse(false, [], "Database error: " . $e->getMessage());
         }

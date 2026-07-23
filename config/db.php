@@ -3,7 +3,7 @@
 $host = 'localhost';
 $dbname = 'true_elite_erp';
 $username = 'root';
-$password = ''; // Update if needed
+$password = 'trueelite'; // Update if needed
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);

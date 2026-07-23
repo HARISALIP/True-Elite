@@ -65,49 +65,6 @@ $currentTab = $_GET['tab'] ?? 'products';
 
         <!-- Main Content List Sheet -->
         <main class="flex-1 p-4">
-        <!-- KPI Summary Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div class="bg-white rounded-sm p-3.5 shadow-sm border border-gray-200 flex items-center justify-between">
-                <div>
-                    <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Total Items</span>
-                    <h3 id="stat-total-items" class="text-xl font-bold text-gray-800 mt-0.5">0</h3>
-                </div>
-                <div class="w-9 h-9 rounded bg-blue-50 text-blue-600 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v1a2 2 0 01-2 2M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-sm p-3.5 shadow-sm border border-gray-200 flex items-center justify-between">
-                <div>
-                    <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Low Stock Alerts</span>
-                    <h3 id="stat-low-stock" class="text-xl font-bold text-red-600 mt-0.5">0</h3>
-                </div>
-                <div class="w-9 h-9 rounded bg-red-50 text-red-600 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-sm p-3.5 shadow-sm border border-gray-200 flex items-center justify-between">
-                <div>
-                    <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Total Qty in Stock</span>
-                    <h3 id="stat-total-qty" class="text-xl font-bold text-emerald-600 mt-0.5">0</h3>
-                </div>
-                <div class="w-9 h-9 rounded bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-sm p-3.5 shadow-sm border border-gray-200 flex items-center justify-between">
-                <div>
-                    <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Stock Valuation (Cost)</span>
-                    <h3 id="stat-total-val" class="text-xl font-bold text-gray-800 mt-0.5">AED 0.00</h3>
-                </div>
-                <div class="w-9 h-9 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-            </div>
-        </div>
-
         <div class="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden w-full">
             <table class="w-full text-left text-xs md:text-[13px] border-collapse" id="list-table">
                 <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 font-semibold cursor-pointer text-[11px] md:text-[12px]">
@@ -368,10 +325,17 @@ function updateDashboardStats(items) {
         totalVal += (q * cost);
     });
 
-    document.getElementById('stat-total-items').textContent = totalItems;
-    document.getElementById('stat-low-stock').textContent = lowStock;
-    document.getElementById('stat-total-qty').textContent = totalQty.toLocaleString();
-    document.getElementById('stat-total-val').textContent = 'AED ' + totalVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const elTotalItems = document.getElementById('stat-total-items');
+    if (elTotalItems) elTotalItems.textContent = totalItems;
+
+    const elLowStock = document.getElementById('stat-low-stock');
+    if (elLowStock) elLowStock.textContent = lowStock;
+
+    const elTotalQty = document.getElementById('stat-total-qty');
+    if (elTotalQty) elTotalQty.textContent = totalQty.toLocaleString();
+
+    const elTotalVal = document.getElementById('stat-total-val');
+    if (elTotalVal) elTotalVal.textContent = 'AED ' + totalVal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function openItemModal() {
