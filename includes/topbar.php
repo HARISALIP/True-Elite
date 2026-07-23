@@ -11,29 +11,41 @@
         </a>
         <span class="text-[16px] font-semibold tracking-wide border-r border-white/20 pr-4 -ml-2"><?php echo htmlspecialchars($moduleName ?? 'True Elite'); ?></span>
         
-        <!-- Dynamic Odoo Sub-menu Links based on Active Module -->
+        <!-- Dynamic Odoo Sub-menu Links based on Active Module and SubSection -->
         <?php 
             $mod = strtolower($moduleName ?? ''); 
-            $currentTab = $_GET['tab'] ?? ($mod === 'purchase' ? 'transaction' : ($mod === 'inventory' ? 'products' : ''));
+            $activeSub = strtolower($subSection ?? '');
+            if (!$activeSub) {
+                if ($mod === 'inventory') $activeSub = 'products';
+                elseif ($mod === 'purchase') $activeSub = 'transaction';
+                elseif ($mod === 'sales') $activeSub = 'quotations';
+                elseif ($mod === 'accounting') $activeSub = 'overview';
+            }
+            function getSubClass($current, $target) {
+                return $current === strtolower($target) 
+                    ? 'px-3 py-1.5 rounded transition-colors font-bold text-white bg-white/20' 
+                    : 'hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors';
+            }
         ?>
         <nav class="hidden md:flex items-center gap-1 text-white/90 text-xs font-medium">
             <?php if ($mod === 'inventory'): ?>
-                <a href="/inventory/index.php?tab=overview" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'overview' ? 'bg-white/20 font-bold text-white' : ''; ?>">Overview</a>
-                <a href="/inventory/index.php?tab=operations" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'operations' ? 'bg-white/20 font-bold text-white' : ''; ?>">Operations</a>
-                <a href="/inventory/index.php?tab=products" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'products' ? 'bg-white/20 font-bold text-white' : ''; ?>">Products</a>
-                <a href="/inventory/index.php?tab=reporting" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'reporting' ? 'bg-white/20 font-bold text-white' : ''; ?>">Reporting</a>
-                <a href="/inventory/index.php?tab=configuration" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'configuration' ? 'bg-white/20 font-bold text-white' : ''; ?>">Configuration</a>
+                <a href="/inventory/overview.php" class="<?php echo getSubClass($activeSub, 'overview'); ?>">Overview</a>
+                <a href="/inventory/operations.php" class="<?php echo getSubClass($activeSub, 'operations'); ?>">Operations</a>
+                <a href="/inventory/index.php" class="<?php echo getSubClass($activeSub, 'products'); ?>">Products</a>
+                <a href="/inventory/reporting.php" class="<?php echo getSubClass($activeSub, 'reporting'); ?>">Reporting</a>
+                <a href="/inventory/configuration.php" class="<?php echo getSubClass($activeSub, 'configuration'); ?>">Configuration</a>
             <?php elseif ($mod === 'purchase'): ?>
-                <a href="/purchase/index.php?tab=transaction" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'transaction' ? 'bg-white/20 font-bold text-white' : ''; ?>">Transaction</a>
-                <a href="/purchase/index.php?tab=master_data" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'master_data' ? 'bg-white/20 font-bold text-white' : ''; ?>">Master Data</a>
-                <a href="/purchase/index.php?tab=reports" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors <?php echo $currentTab === 'reports' ? 'bg-white/20 font-bold text-white' : ''; ?>">Reports</a>
+                <a href="/purchase/index.php" class="<?php echo getSubClass($activeSub, 'transaction'); ?>">Transaction</a>
+                <a href="/purchase/master_data.php" class="<?php echo getSubClass($activeSub, 'master_data'); ?>">Master Data</a>
+                <a href="/purchase/reports.php" class="<?php echo getSubClass($activeSub, 'reports'); ?>">Reports</a>
             <?php elseif ($mod === 'sales'): ?>
-                <a href="/sales/quotations.php" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors font-bold text-white bg-white/20">Quotations & Orders</a>
+                <a href="/sales/quotations.php" class="<?php echo getSubClass($activeSub, 'quotations'); ?>">Quotations & Orders</a>
+                <a href="/sales/reporting.php" class="<?php echo getSubClass($activeSub, 'reporting'); ?>">Reporting</a>
+                <a href="/sales/configuration.php" class="<?php echo getSubClass($activeSub, 'configuration'); ?>">Configuration</a>
             <?php elseif ($mod === 'accounting'): ?>
-                <a href="/accounting/index.php" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors font-bold text-white bg-white/20">Overview</a>
-                <a href="/accounting/index.php" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors">Accounting</a>
-                <a href="#" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors">Reporting</a>
-                <a href="#" class="hover:text-white hover:bg-white/10 px-3 py-1.5 rounded transition-colors">Configuration</a>
+                <a href="/accounting/index.php" class="<?php echo getSubClass($activeSub, 'overview'); ?>">Overview</a>
+                <a href="/accounting/reporting.php" class="<?php echo getSubClass($activeSub, 'reporting'); ?>">Reporting</a>
+                <a href="/accounting/configuration.php" class="<?php echo getSubClass($activeSub, 'configuration'); ?>">Configuration</a>
             <?php endif; ?>
         </nav>
     </div>
