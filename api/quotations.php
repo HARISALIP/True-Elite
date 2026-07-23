@@ -145,13 +145,42 @@ if ($method === 'POST') {
             jsonResponse(false, [], "Quotation ID and Status are required.");
         }
         
+        $pdo->beginTransaction();
         try {
+            // Get current status and quotation details
+            $qStmt = $pdo->prepare("SELECT quotation_number, workflow_status FROM quotations WHERE id = ?");
+            $qStmt->execute([$quotationId]);
+            $currentQ = $qStmt->fetch(PDO::FETCH_ASSOC);
+            
+            $oldStatus = $currentQ['workflow_status'] ?? '';
+            
             $stmt = $pdo->prepare("UPDATE quotations SET workflow_status = ? WHERE id = ?");
             $stmt->execute([$status, $quotationId]);
             
+            // Deduct stock if transitioning to 'Sales Order' for the first time
+            if ($status === 'Sales Order' && $oldStatus !== 'Sales Order') {
+                $itemsStmt = $pdo->prepare("SELECT product_id, quantity FROM quotation_items WHERE quotation_id = ? AND product_id IS NOT NULL AND is_section = 0 AND is_note = 0");
+                $itemsStmt->execute([$quotationId]);
+                $items = $itemsStmt->fetchAll(PDO::FETCH_ASSOC);
+
+                $smStmt = $pdo->prepare("INSERT INTO stock_movements (product_id, movement_type, source_type, source_id, quantity, reference_no, notes) VALUES (?, 'OUT', 'SALES_ORDER', ?, ?, ?, ?)");
+                $updStockStmt = $pdo->prepare("UPDATE products SET quantity_in_stock = quantity_in_stock - ?, stock_out_total = stock_out_total + ? WHERE id = ?");
+
+                foreach ($items as $item) {
+                    $pId = $item['product_id'];
+                    $qty = (float)$item['quantity'];
+                    if ($pId && $qty > 0) {
+                        $smStmt->execute([$pId, $quotationId, $qty, $currentQ['quotation_number'], "Sales Order Confirmation"]);
+                        $updStockStmt->execute([$qty, $qty, $pId]);
+                    }
+                }
+            }
+            
             logActivity($pdo, 1, 'Status Updated', 'Sales', $quotationId, "Changed status to $status");
+            $pdo->commit();
             jsonResponse(true, []);
         } catch (Exception $e) {
+            $pdo->rollBack();
             jsonResponse(false, [], "Database error: " . $e->getMessage());
         }
     }

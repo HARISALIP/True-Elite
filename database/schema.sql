@@ -53,6 +53,14 @@ CREATE TABLE `products` (
   `model` varchar(100) DEFAULT NULL,
   `barcode` varchar(100) DEFAULT NULL,
   `internal_reference` varchar(100) DEFAULT NULL,
+  `item_code` varchar(100) DEFAULT NULL,
+  `supplier_id` int(11) DEFAULT NULL,
+  `supplier_name` varchar(150) DEFAULT NULL,
+  `quantity_in_stock` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `min_stock_alert` decimal(10,2) NOT NULL DEFAULT '5.00',
+  `stock_in_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `stock_out_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `equipment_serial_number` varchar(100) DEFAULT NULL,
   `sales_price` decimal(10,2) NOT NULL DEFAULT '0.00',
   `cost` decimal(10,2) NOT NULL DEFAULT '0.00',
   `tax` decimal(5,2) NOT NULL DEFAULT '5.00',
@@ -140,6 +148,82 @@ CREATE TABLE `activities` (
   KEY `user_id` (`user_id`),
   KEY `module_record` (`module`,`record_id`),
   CONSTRAINT `fk_activity_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+-- Table structure for `suppliers`
+CREATE TABLE IF NOT EXISTS `suppliers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `supplier_name` varchar(150) NOT NULL,
+  `contact_person` varchar(100) DEFAULT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `email` varchar(150) DEFAULT NULL,
+  `address` text,
+  `trn` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+-- Table structure for `direct_purchases`
+CREATE TABLE IF NOT EXISTS `direct_purchases` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `voucher_number` varchar(50) NOT NULL,
+  `supplier_id` int(11) DEFAULT NULL,
+  `supplier_name` varchar(150) DEFAULT NULL,
+  `purchase_date` date NOT NULL,
+  `reference_no` varchar(100) DEFAULT NULL,
+  `payment_terms` varchar(100) DEFAULT 'Immediate',
+  `subtotal` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `tax_total` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `grand_total` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `notes` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `voucher_number` (`voucher_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+-- Table structure for `direct_purchase_items`
+CREATE TABLE IF NOT EXISTS `direct_purchase_items` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `purchase_id` int(11) NOT NULL,
+  `product_id` int(11) DEFAULT NULL,
+  `item_code` varchar(100) DEFAULT NULL,
+  `product_name` varchar(150) NOT NULL,
+  `description` text,
+  `category` varchar(100) DEFAULT 'General',
+  `quantity` decimal(10,2) NOT NULL DEFAULT '1.00',
+  `purchase_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `selling_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `subtotal` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `equipment_serial_number` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `purchase_id` (`purchase_id`),
+  CONSTRAINT `fk_dpi_purchase` FOREIGN KEY (`purchase_id`) REFERENCES `direct_purchases` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+-- Table structure for `stock_movements`
+CREATE TABLE IF NOT EXISTS `stock_movements` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `product_id` int(11) NOT NULL,
+  `movement_type` enum('IN','OUT') NOT NULL,
+  `source_type` enum('DIRECT_PURCHASE','PO','SALES_ORDER','ADJUSTMENT') NOT NULL,
+  `source_id` int(11) DEFAULT NULL,
+  `quantity` decimal(10,2) NOT NULL,
+  `reference_no` varchar(100) DEFAULT NULL,
+  `notes` text,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `product_id` (`product_id`),
+  CONSTRAINT `fk_sm_product` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------

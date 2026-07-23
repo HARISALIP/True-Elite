@@ -4,14 +4,21 @@ $moduleName = 'Sales';
 require_once '../includes/header.php';
 require_once '../config/db.php';
 
+// Safe defaults in case of DB error or empty table
+$quotes = [];
+$totalRecords = 0;
+$totalPages = 1;
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) $page = 1;
+$startRecord = 0;
+$endRecord = 0;
+
 try {
     // Clean up old demo/test records
     $pdo->exec("DELETE FROM quotations WHERE quotation_number NOT LIKE 'TEK-%'");
 
     // Pagination Logic
     $limit = 30;
-    $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-    if ($page < 1) $page = 1;
     $offset = ($page - 1) * $limit;
 
     // Get Total Count
